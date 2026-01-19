@@ -3,7 +3,6 @@ import { ref, onMounted, watch } from "vue";
 import { RouterView, useRoute } from "vue-router";
 
 // Импортируем компоненты
-import Header from "@/components/Header.vue";
 import Navigation from "@/components/Navigation.vue";
 
 // Импортируем утилиты Telegram
@@ -55,9 +54,6 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col min-h-screen bg-white">
-    <!-- Шапка приложения -->
-    <Header />
-
     <!-- Основной контент -->
     <main class="flex-grow">
       <RouterView v-slot="{ Component }">
