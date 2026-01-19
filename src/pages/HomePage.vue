@@ -88,6 +88,70 @@
 
     <!-- Карточки меню с улучшенным дизайном -->
     <div v-else class="px-4 py-5 space-y-3">
+      <!-- Профиль -->
+      <router-link
+        to="/profile"
+        class="block bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all duration-200 active:scale-98 hover:shadow-md"
+      >
+        <div class="flex items-center">
+          <div
+            class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl flex items-center justify-center"
+          >
+            <span class="text-2xl">👤</span>
+          </div>
+          <div class="ml-4 flex-1 min-w-0">
+            <h3 class="font-semibold text-gray-900 text-base">Мой профиль</h3>
+            <p class="text-sm text-gray-500 mt-0.5 truncate">
+              Личная информация и настройки
+            </p>
+          </div>
+          <svg
+            class="h-5 w-5 text-gray-400 flex-shrink-0 ml-2"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </div>
+      </router-link>
+
+      <!-- Мальчишники и девичники -->
+      <router-link
+        to="/bachelor"
+        class="block bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all duration-200 active:scale-98 hover:shadow-md"
+      >
+        <div class="flex items-center">
+          <div
+            class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl flex items-center justify-center"
+          >
+            <span class="text-2xl">🎉</span>
+          </div>
+          <div class="ml-4 flex-1 min-w-0">
+            <h3 class="font-semibold text-gray-900 text-base">
+              Мальчишники и девичники
+            </h3>
+            <p class="text-sm text-gray-500 mt-0.5 line-clamp-2">
+              Отпразднуйте важное событие в особенной атмосфере!
+            </p>
+          </div>
+          <svg
+            class="h-5 w-5 text-gray-400 flex-shrink-0 ml-2"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </div>
+      </router-link>
+
       <!-- Клубные мероприятия -->
       <router-link
         to="/club-events"
