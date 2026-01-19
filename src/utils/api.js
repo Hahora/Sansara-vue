@@ -64,48 +64,29 @@ async function apiRequest(endpoint, options = {}) {
     );
   }
 
-  let requestUrl = url;
+  // Для ВСЕХ типов запросов добавляем __init_data в тело
+  if (telegramAuthData) {
+    let bodyData = {};
 
-  // Для POST/PUT/PATCH запросов добавляем в тело
-  if (
-    config.method === "POST" ||
-    config.method === "PUT" ||
-    config.method === "PATCH"
-  ) {
-    if (telegramAuthData && config.body) {
+    // Парсим существующее тело запроса, если оно есть
+    if (config.body) {
       try {
-        const bodyData = JSON.parse(config.body);
-        bodyData.init_data = telegramAuthData;
-        config.body = JSON.stringify(bodyData);
-        console.log("Added init_data to request body");
+        bodyData = JSON.parse(config.body);
       } catch (e) {
-        console.warn("Could not add init_data to request body:", e);
+        console.warn("Could not parse existing request body:", e);
       }
-    } else if (telegramAuthData && !config.body) {
-      config.body = JSON.stringify({ init_data: telegramAuthData });
-      console.log("Created request body with init_data");
     }
-  }
 
-  // Для GET/HEAD/DELETE запросов добавляем в query параметры
-  if (
-    config.method === "GET" ||
-    config.method === "HEAD" ||
-    config.method === "DELETE"
-  ) {
-    if (telegramAuthData) {
-      const separator = url.includes("?") ? "&" : "?";
-      requestUrl = `${url}${separator}init_data=${encodeURIComponent(telegramAuthData)}`;
-      console.log("Added init_data to URL query params");
-    }
+    // Добавляем __init_data (с двойным подчеркиванием)
+    bodyData.__init_data = telegramAuthData;
+    config.body = JSON.stringify(bodyData);
+    console.log("Added __init_data to request body");
   }
 
   try {
-    console.log(
-      `Making ${config.method || "GET"} request to: ${requestUrl.substring(0, 100)}...`
-    );
+    console.log(`Making ${config.method || "GET"} request to: ${url}`);
 
-    const response = await fetch(requestUrl, config);
+    const response = await fetch(url, config);
 
     console.log(`Response status: ${response.status}`);
     console.log(
