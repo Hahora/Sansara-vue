@@ -1,11 +1,9 @@
-// src/utils/api.js - Основной файл для взаимодействия с API
+// src/utils/api.js
 
 import { getTelegramInitData } from "./telegram.js";
 
-// Базовый URL API
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
-// Функция для получения данных аутентификации из Telegram WebApp
 function getTelegramAuthData() {
   const initData = getTelegramInitData();
 
@@ -31,7 +29,6 @@ function getTelegramAuthData() {
   return initData;
 }
 
-// Функция для получения Telegram ID пользователя
 function getTelegramUserId() {
   if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
     return window.Telegram.WebApp.initDataUnsafe.user.id.toString();
@@ -39,24 +36,11 @@ function getTelegramUserId() {
   return null;
 }
 
-// Базовая функция для выполнения запросов к API
 async function apiRequest(endpoint, options = {}) {
   const url = `${API_BASE_URL}${endpoint}`;
 
-  const headers = {
-    "Content-Type": "application/json",
-    ...options.headers,
-  };
-
-  const config = {
-    ...options,
-    headers,
-  };
-
-  // Добавляем данные аутентификации Telegram
   const telegramAuthData = getTelegramAuthData();
 
-  // Если нет данных Telegram, не отправляем запрос (кроме health check)
   if (!telegramAuthData && !endpoint.includes("/health")) {
     console.error("No Telegram auth data available - request blocked");
     throw new Error(
@@ -64,23 +48,43 @@ async function apiRequest(endpoint, options = {}) {
     );
   }
 
-  // Для ВСЕХ типов запросов добавляем __init_data в тело
+  const headers = {
+    "Content-Type": "application/json",
+    ...options.headers,
+  };
+
+  // Добавляем __init_data в заголовок для всех запросов
   if (telegramAuthData) {
-    let bodyData = {};
+    headers["X-Telegram-Init-Data"] = telegramAuthData;
+    console.log("Added __init_data to headers");
+  }
 
-    // Парсим существующее тело запроса, если оно есть
-    if (config.body) {
-      try {
-        bodyData = JSON.parse(config.body);
-      } catch (e) {
-        console.warn("Could not parse existing request body:", e);
+  const config = {
+    ...options,
+    headers,
+  };
+
+  // Для POST/PUT/PATCH также добавляем в тело
+  if (
+    config.method === "POST" ||
+    config.method === "PUT" ||
+    config.method === "PATCH"
+  ) {
+    if (telegramAuthData) {
+      let bodyData = {};
+
+      if (config.body) {
+        try {
+          bodyData = JSON.parse(config.body);
+        } catch (e) {
+          console.warn("Could not parse existing request body:", e);
+        }
       }
-    }
 
-    // Добавляем __init_data (с двойным подчеркиванием)
-    bodyData.__init_data = telegramAuthData;
-    config.body = JSON.stringify(bodyData);
-    console.log("Added __init_data to request body");
+      bodyData.__init_data = telegramAuthData;
+      config.body = JSON.stringify(bodyData);
+      console.log("Added __init_data to request body");
+    }
   }
 
   try {
@@ -161,17 +165,12 @@ async function apiRequest(endpoint, options = {}) {
   }
 }
 
-// ============================================================================
-// ЭКСПОРТЫ API
-// ============================================================================
-
-// Аутентификация
+// Остальные экспорты без изменений...
 export const authAPI = {
   verify: () => apiRequest("/api/v1/auth/verify", { method: "POST" }),
   getCurrentUser: () => apiRequest("/api/v1/auth/me", { method: "GET" }),
 };
 
-// Пользователи
 export const userAPI = {
   getByTelegramId: (telegramId) =>
     apiRequest(`/api/v1/users/${telegramId}`, { method: "GET" }),
@@ -197,7 +196,6 @@ export const userAPI = {
   },
 };
 
-// Программы
 export const programAPI = {
   getAll: () => apiRequest("/api/v1/programs/", { method: "GET" }),
   getById: (programId) =>
@@ -206,14 +204,12 @@ export const programAPI = {
     apiRequest(`/api/v1/programs/type/${programType}`, { method: "GET" }),
 };
 
-// Мероприятия
 export const eventAPI = {
   getAll: () => apiRequest("/api/v1/events/", { method: "GET" }),
   getById: (eventId) =>
     apiRequest(`/api/v1/events/${eventId}`, { method: "GET" }),
 };
 
-// Бронирования
 export const bookingAPI = {
   create: (bookingData) =>
     apiRequest("/api/v1/bookings/", {
@@ -243,7 +239,6 @@ export const bookingAPI = {
     }),
 };
 
-// Сертификаты
 export const certificateAPI = {
   getAll: () => apiRequest("/api/v1/certificates/", { method: "GET" }),
   getByCode: (code) =>
@@ -255,7 +250,6 @@ export const certificateAPI = {
     }),
 };
 
-// Промокоды
 export const promoAPI = {
   getAll: () =>
     apiRequest("/api/v1/certificates/promocodes/", { method: "GET" }),
@@ -265,7 +259,6 @@ export const promoAPI = {
     }),
 };
 
-// Лотерея
 export const lotteryAPI = {
   getSettings: () => apiRequest("/api/v1/lottery/settings", { method: "GET" }),
   getCodes: () => apiRequest("/api/v1/lottery/codes/", { method: "GET" }),
