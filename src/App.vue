@@ -17,18 +17,6 @@ import {
 const showNavigation = ref(true);
 const route = useRoute();
 
-// Отладочная информация (только для dev режима)
-const isDevMode = import.meta.env.MODE === "development";
-const debugInfo = ref({
-  hasInitData: false,
-  hasInitDataUnsafe: false,
-  hasUser: false,
-  initDataLength: 0,
-  userId: "N/A",
-  userName: "N/A",
-  mode: import.meta.env.MODE,
-});
-
 // Функция для скрытия навигации на определенных страницах
 const hideNavigationOnPages = ["booking"];
 
@@ -46,55 +34,18 @@ onMounted(() => {
   delete window.testInitData;
 
   // Инициализация Telegram WebApp
-  const isTelegramAvailable = initTelegramWebApp();
+  initTelegramWebApp();
 
-  // Добавляем отладочную информацию
-  if (window.Telegram?.WebApp) {
-    const tgApp = window.Telegram.WebApp;
+  if (hasValidTelegramData()) {
+    const userInfo = getTelegramUserInfo();
+    console.log("Telegram user authenticated:", userInfo);
 
-    // Обновляем отладочную информацию
-    debugInfo.value = {
-      hasInitData: !!tgApp.initData,
-      hasInitDataUnsafe: !!tgApp.initDataUnsafe,
-      hasUser: !!tgApp.initDataUnsafe?.user,
-      initDataLength: tgApp.initData ? tgApp.initData.length : 0,
-      userId: tgApp.initDataUnsafe?.user?.id || "N/A",
-      userName: tgApp.initDataUnsafe?.user?.first_name || "N/A",
-      mode: import.meta.env.MODE,
-    };
-
-    // Логируем в консоль для отладки
-    console.log("Telegram WebApp Debug Info:", debugInfo.value);
-
-    if (hasValidTelegramData()) {
-      const userInfo = getTelegramUserInfo();
-      console.log("Telegram user authenticated:", userInfo);
-
-      // Сохраняем данные пользователя
-      localStorage.setItem("telegram_user", JSON.stringify(userInfo));
-    } else {
-      console.warn(
-        "No valid Telegram data available - application must be run through Telegram"
-      );
-
-      // В production показываем предупреждение
-      if (!isDevMode) {
-        window.Telegram.WebApp.showAlert(
-          "Ошибка: нет данных Telegram. Пожалуйста, откройте приложение через Telegram Bot."
-        );
-      }
-    }
+    // Сохраняем данные пользователя
+    localStorage.setItem("telegram_user", JSON.stringify(userInfo));
   } else {
-    // Telegram WebApp недоступен
-    debugInfo.value.mode = import.meta.env.MODE;
-
-    if (isDevMode) {
-      console.warn("Running in development mode without Telegram WebApp");
-      debugInfo.value.hasInitData = false;
-      debugInfo.value.hasUser = false;
-    } else {
-      console.error("Telegram WebApp not available in production mode!");
-    }
+    console.warn(
+      "No valid Telegram data available - application must be run through Telegram"
+    );
   }
 
   // Обновляем видимость навигации при монтировании
@@ -104,26 +55,11 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col min-h-screen bg-white">
-    <!-- Отладочная панель (только в dev режиме) -->
-    <div
-      v-if="isDevMode"
-      class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 text-xs"
-    >
-      <div class="font-bold">DEBUG INFO:</div>
-      <div>Mode: {{ debugInfo.mode }}</div>
-      <div>InitData: {{ debugInfo.hasInitData ? "YES" : "NO" }}</div>
-      <div>User: {{ debugInfo.hasUser ? "YES" : "NO" }}</div>
-      <div>User ID: {{ debugInfo.userId }}</div>
-      <div>User Name: {{ debugInfo.userName }}</div>
-      <div>Data Length: {{ debugInfo.initDataLength }}</div>
-    </div>
-
     <!-- Шапка приложения -->
     <Header />
 
     <!-- Основной контент -->
     <main class="flex-grow">
-      <!-- Исправленный синтаксис RouterView с keep-alive -->
       <RouterView v-slot="{ Component }">
         <keep-alive>
           <component :is="Component" />

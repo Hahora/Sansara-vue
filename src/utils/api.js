@@ -3,10 +3,7 @@
 import { getTelegramInitData } from "./telegram.js";
 
 // Базовый URL API
-const API_BASE_URL =
-  import.meta.env.MODE === "development"
-    ? ""
-    : import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 // Функция для получения данных аутентификации из Telegram WebApp
 function getTelegramAuthData() {
@@ -17,7 +14,6 @@ function getTelegramAuthData() {
     console.log("InitData length:", initData.length);
     console.log("InitData preview:", initData.substring(0, 150) + "...");
 
-    // Проверяем наличие обязательных полей
     const hasUser = initData.includes("user=");
     const hasHash = initData.includes("hash=");
     const hasAuthDate = initData.includes("auth_date=");
@@ -79,7 +75,6 @@ async function apiRequest(endpoint, options = {}) {
     if (telegramAuthData && config.body) {
       try {
         const bodyData = JSON.parse(config.body);
-        // Используем стандартное имя параметра
         bodyData.init_data = telegramAuthData;
         config.body = JSON.stringify(bodyData);
         console.log("Added init_data to request body");
@@ -87,7 +82,6 @@ async function apiRequest(endpoint, options = {}) {
         console.warn("Could not add init_data to request body:", e);
       }
     } else if (telegramAuthData && !config.body) {
-      // Если нет тела запроса, создаем его только с init_data
       config.body = JSON.stringify({ init_data: telegramAuthData });
       console.log("Created request body with init_data");
     }
@@ -101,7 +95,6 @@ async function apiRequest(endpoint, options = {}) {
   ) {
     if (telegramAuthData) {
       const separator = url.includes("?") ? "&" : "?";
-      // Используем стандартное имя параметра и корректное кодирование
       requestUrl = `${url}${separator}init_data=${encodeURIComponent(telegramAuthData)}`;
       console.log("Added init_data to URL query params");
     }
@@ -119,7 +112,6 @@ async function apiRequest(endpoint, options = {}) {
       `Response content-type: ${response.headers.get("content-type")}`
     );
 
-    // Проверяем, успешен ли ответ
     if (!response.ok) {
       let errorMessage = `HTTP error! status: ${response.status}`;
       try {
@@ -139,12 +131,10 @@ async function apiRequest(endpoint, options = {}) {
       throw new Error(errorMessage);
     }
 
-    // Для методов, не возвращающих тело (например, DELETE), возвращаем пустой объект
     if (response.status === 204) {
       return {};
     }
 
-    // Проверяем тип контента
     const contentType = response.headers.get("content-type");
     if (!contentType?.includes("application/json")) {
       console.warn(`Expected JSON response but got ${contentType}`);
@@ -152,7 +142,6 @@ async function apiRequest(endpoint, options = {}) {
 
     const responseText = await response.text();
 
-    // Проверяем, есть ли содержимое
     if (!responseText.trim()) {
       console.log("Empty response body");
       return {};
@@ -161,7 +150,6 @@ async function apiRequest(endpoint, options = {}) {
     try {
       const trimmedText = responseText.trim();
 
-      // Проверяем, что это JSON
       if (!trimmedText.startsWith("{") && !trimmedText.startsWith("[")) {
         console.error(
           "Response does not appear to be JSON:",
@@ -183,7 +171,6 @@ async function apiRequest(endpoint, options = {}) {
   } catch (error) {
     console.error(`Request error for ${url}:`, error);
 
-    // Обработка сетевых ошибок
     if (error instanceof TypeError && error.message.includes("fetch")) {
       throw new Error(
         `Network error: Could not connect to ${url}. Please check your connection.`
