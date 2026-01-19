@@ -3,7 +3,7 @@
 import { getTelegramInitData } from "./telegram.js";
 
 // Базовый URL API
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
 // Функция для получения данных аутентификации из Telegram WebApp
 function getTelegramAuthData() {
