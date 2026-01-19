@@ -43,8 +43,8 @@ export function getTelegramInitData() {
       return null;
     }
 
-    // ВАЖНО: Используем ТОЛЬКО оригинальный initData от Telegram
-    // НЕ создаём его вручную из initDataUnsafe!
+    // КРИТИЧНО: Используем ТОЛЬКО оригинальный initData от Telegram
+    // НЕ пересоздаём его из initDataUnsafe - hash будет неправильный!
     const initData = tgApp.initData;
 
     console.log("=== TELEGRAM INIT DATA DEBUG ===");
